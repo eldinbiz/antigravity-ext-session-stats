@@ -1,0 +1,20 @@
+{
+  "command": "node",
+  "args": [
+    "server.js"
+  ],
+  "description": "Live session statistics and token usage monitor for Antigravity 2.0",
+  "display_name": "Session Statistics",
+  "has_web_ui": true,
+  "restart_policy": "always",
+  "ui_config": {
+    "display_name": "Session Statistics",
+    "views": [
+      {
+        "entrypoint": "SIDECAR_UI_ENTRYPOINT_AUX_PANE",
+        "path": "/ui.html",
+        "title": "Session Statistics"
+      }
+    ]
+  }
+}

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session Statistics</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg: var(--background, #18181b);
+      --card-bg: var(--card, #202024);
+      --border-color: var(--border, rgba(255, 255, 255, 0.08));
+      --text: var(--foreground, #f4f4f5);
+      --text-muted: var(--muted-foreground, #a1a1aa);
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .stat-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .divider {
+      border-top: 1px solid var(--border-color);
+      margin: 10px 0 12px 0;
+    }
+  </style>
+</head>
+<body class="antialiased">
+  <div class="max-w-md mx-auto space-y-4">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between pb-1">
+      <div class="flex items-center space-x-2">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <h1 class="text-sm font-semibold tracking-wide uppercase opacity-75">Session Monitor</h1>
+      </div>
+      <div class="flex items-center space-x-2">
+        <label class="flex items-center space-x-1.5 text-xs text-[var(--text-muted)] cursor-pointer select-none">
+          <input type="checkbox" id="auto-refresh" checked class="rounded border-zinc-700 text-indigo-600 focus:ring-0">
+          <span>Live (3s)</span>
+        </label>
+        <button id="refresh-btn" class="p-1 rounded hover:bg-white/10 active:scale-95 transition-all text-xs flex items-center gap-1 border border-[var(--border-color)] px-2 py-0.5">
+          <svg id="refresh-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          Sync
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Conversation Info -->
+    <div class="text-xs text-[var(--text-muted)] flex justify-between items-center px-1">
+      <span class="truncate">Session: <span id="conv-id" class="font-mono text-zinc-300">Loading...</span></span>
+      <span id="step-count" class="font-mono text-[11px] bg-white/5 px-2 py-0.5 rounded">0 steps</span>
+    </div>
+
+    <!-- Card 1: Session Statistics -->
+    <div class="stat-card">
+      <div class="flex items-center space-x-2 text-sm font-medium">
+        <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>Session statistics</span>
+      </div>
+      <div class="divider"></div>
+      <div class="space-y-2.5 text-sm">
+        <div class="flex justify-between items-center">
+          <span class="text-[var(--text-muted)]">LLM time</span>
+          <span id="llm-time" class="font-medium">0s</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-[var(--text-muted)]">Tool time</span>
+          <span id="tool-time" class="font-medium">0s</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-[var(--text-muted)]">Avg time to first token (TTFT)</span>
+          <span id="ttft" class="font-medium">0s</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-[var(--text-muted)]">Tokens per second (TPS)</span>
+          <span id="tps" class="font-medium">0 tok/s</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Token Usage -->
+    <div class="stat-card">
+      <div class="flex items-center justify-between text-sm font-medium">
+        <div class="flex items-center space-x-2">
+          <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1.5 3 3.5 3h9c2 0 3.5-1 3.5-3V7M4 7c0-2 1.5-3 3.5-3h9c2 0 3.5 1 3.5 3M4 7h16m-16 5h16"></path>
+          </svg>
+          <span>Token usage</span>
+        </div>
+        <span id="total-tokens-header" class="font-bold tracking-tight">0 tok</span>
+      </div>
+      <div class="divider"></div>
+      <div class="space-y-2.5 text-sm">
+        <div class="flex justify-between items-center">
+          <span class="text-[var(--text-muted)]">Cache hit</span>
+          <span id="cache-hit" class="font-medium text-emerald-400">0%</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-[var(--text-muted)]">Uncached input</span>
+          <span id="uncached-input" class="font-medium">0 tok</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-[var(--text-muted)]">Cached input</span>
+          <span id="cached-input" class="font-medium">0 tok</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-[var(--text-muted)]">Output</span>
+          <span id="output-tokens" class="font-medium">0 tok</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Context Usage -->
+    <div class="stat-card">
+      <div class="flex items-center justify-between text-sm font-medium">
+        <span id="context-percent-header">0% of context used</span>
+        <span id="context-tokens-header" class="text-xs text-[var(--text-muted)]">~0 / 1M</span>
+      </div>
+      
+      <!-- Multi-segmented Progress Bar -->
+      <div class="w-full h-2 bg-zinc-800 rounded-full mt-3 overflow-hidden flex">
+        <div id="bar-system" class="h-full bg-zinc-400 transition-all duration-500" style="width: 0.2%"></div>
+        <div id="bar-tools" class="h-full bg-indigo-500 transition-all duration-500" style="width: 0.7%"></div>
+        <div id="bar-messages" class="h-full bg-sky-500 transition-all duration-500" style="width: 0.5%"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Legend -->
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-sm bg-zinc-400 inline-block"></span>
+            <span class="text-[var(--text-muted)]">System prompt</span>
+          </div>
+          <span id="tokens-system" class="font-medium text-xs">~0</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-sm bg-indigo-500 inline-block"></span>
+            <span class="text-[var(--text-muted)]">Tool definitions</span>
+          </div>
+          <span id="tokens-tools" class="font-medium text-xs">~0</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-sm bg-sky-500 inline-block"></span>
+            <span class="text-[var(--text-muted)]">Messages</span>
+          </div>
+          <span id="tokens-messages" class="font-medium text-xs">~0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialConvId = urlParams.get('conversationId') || 'current';
+
+    function fmtTok(num) {
+      if (typeof num !== 'number') return '0 tok';
+      return num.toLocaleString() + ' tok';
+    }
+
+    function fmtShort(num) {
+      if (num >= 1000000) return '~' + (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return '~' + (num / 1000).toFixed(1) + 'K';
+      return '~' + num;
+    }
+
+    async function fetchStats() {
+      const icon = document.getElementById('refresh-icon');
+      icon.classList.add('animate-spin');
+      try {
+        const res = await fetch('/api/stats?conversationId=' + encodeURIComponent(initialConvId));
+        if (!res.ok) throw new Error('Status ' + res.status);
+        const data = await res.json();
+        render(data);
+      } catch (err) {
+        console.error('Fetch error:', err);
+      } finally {
+        setTimeout(() => icon.classList.remove('animate-spin'), 300);
+      }
+    }
+
+    function render(data) {
+      if (!data || !data.tokens) return;
+
+      document.getElementById('conv-id').textContent = data.conversationId ? data.conversationId.slice(0, 12) + '...' : 'Active';
+      document.getElementById('step-count').textContent = data.stepCount + ' steps (' + data.turnCount + ' turns)';
+
+      // Session statistics
+      document.getElementById('llm-time').textContent = data.timings.llmTimeSec;
+      document.getElementById('tool-time').textContent = data.timings.toolTimeSec;
+      document.getElementById('ttft').textContent = data.timings.avgTtft;
+      document.getElementById('tps').textContent = data.timings.tps;
+
+      // Token usage
+      document.getElementById('total-tokens-header').textContent = fmtTok(data.tokens.total);
+      document.getElementById('cache-hit').textContent = data.tokens.cacheHitRate + '%';
+      document.getElementById('uncached-input').textContent = fmtTok(data.tokens.uncachedInput);
+      document.getElementById('cached-input').textContent = fmtTok(data.tokens.cachedInput);
+      document.getElementById('output-tokens').textContent = fmtTok(data.tokens.output);
+
+      // Context usage
+      document.getElementById('context-percent-header').textContent = data.context.percentUsed + ' of context used';
+      document.getElementById('context-tokens-header').textContent = fmtShort(data.context.activeTokens) + ' / 1M';
+
+      const sys = data.context.breakdown.systemPrompt;
+      const tools = data.context.breakdown.toolDefinitions;
+      const msgs = data.context.breakdown.messages;
+      const max = data.context.maxTokens;
+
+      const sysPct = Math.max(0.1, (sys / max) * 100);
+      const toolsPct = Math.max(0.1, (tools / max) * 100);
+      const msgsPct = Math.max(0.1, (msgs / max) * 100);
+
+      document.getElementById('bar-system').style.width = sysPct + '%';
+      document.getElementById('bar-tools').style.width = toolsPct + '%';
+      document.getElementById('bar-messages').style.width = msgsPct + '%';
+
+      document.getElementById('tokens-system').textContent = fmtShort(sys);
+      document.getElementById('tokens-tools').textContent = fmtShort(tools);
+      document.getElementById('tokens-messages').textContent = fmtShort(msgs);
+    }
+
+    document.getElementById('refresh-btn').addEventListener('click', fetchStats);
+
+    let pollInterval = setInterval(fetchStats, 3000);
+    document.getElementById('auto-refresh').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        if (!pollInterval) pollInterval = setInterval(fetchStats, 3000);
+      } else {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+    });
+
+    fetchStats();
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "session-stats",
+  "displayName": "Session Statistics",
+  "description": "Live session statistics and token usage monitor for Antigravity 2.0.",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/<your-username>/<your-repo>"
+  },
+  "suggestedPrompts": [
+    "Show session statistics and token usage",
+    "How many tokens have I used in this session?",
+    "Open session statistics in the side pane"
+  ]
+}
