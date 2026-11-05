@@ -10,7 +10,7 @@ A real-time telemetry sidecar extension for Google Antigravity 2.0 that visualiz
 
 You can install this plugin directly from within Antigravity by asking the agent in the chatbox:
 
-> **"Install the session-stats plugin from `https://github.com/<your-username>/<your-repo>`"**
+> **"Install the session-stats plugin from `https://github.com/eldinbiz/antigravity-ext-session-stats.git`"**
 
 The Antigravity agent will clone and install the plugin into your local customizations folder (`~/.gemini/config/plugins/session-stats/`). No manual terminal commands, build steps, or external dependencies are required.
 
